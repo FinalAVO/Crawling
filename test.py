@@ -5,25 +5,31 @@ import os
 import json
 import sys
 
-url = "https://itunes.apple.com/kr/rss/customerreviews/id=1435757638/xml"
+# url = "https://itunes.apple.com/kr/rss/customerreviews/id=1435757638/xml"
 
 
 def appstore_crawler(url):
+    if url == '':
+        print("URL empty")
+        return
     result = []
     response = requests.get(url).content.decode('utf8')
     xml = xmltodict.parse(response)
     for i in range(len(xml['feed']['entry'])):
+        review_pre = xml['feed']['entry'][i]['content'][0]['#text'].replace("\n", " ")
         result.append({
             'USER': xml['feed']['entry'][i]['author']['name'],
             'DATE': xml['feed']['entry'][i]['updated'],
             'STAR': int(xml['feed']['entry'][i]['im:rating']),
             'LIKE': int(xml['feed']['entry'][i]['im:voteSum']),
             'TITLE': xml['feed']['entry'][i]['title'],
-            'REVIEW': xml['feed']['entry'][i]['content'][0]['#text']
+            # 'REVIEW': xml['feed']['entry'][i]['content'][0]['#text']
+            'REVIEW': review_pre
         })
     print(result)
     res_df = pd.DataFrame(result)
     res_df.to_csv("./appstore_reviews.csv", encoding='utf-8-sig', index=False)
 
+url = sys.argv[1]
 
 appstore_crawler(url)

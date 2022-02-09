@@ -9,20 +9,33 @@ app.use(express.json());
 app.use(express.urlencoded({extended : false}));
 
 const spawn = require('child_process').spawn;
-var fs = require('fs');
-var parse = require('csv-parse');
-var parser = parse({columns: true}, function (err, records) {
-	console.log(records);
+const {PythonShell} =require('python-shell');
+
+app.get("/scrap",(req, res) => {
+  res.send("Hello");
 });
 
-app.get("/Hello",(req, res) => {
-  var process = spawn('python', ['test.py']);
-  res.send(fs.createReadStream(__dirname+'/appstore_reviews.csv').pipe(parser));
+app.get("/scrap/url",(req, res, next) => {
+  // var process = spawn('python', ['test.py']);
   // process.stdout.on('data', function(data) {
-  //   // Do something with the data returned from python script
-  //   res.json(data.toString());
+  //
+  //   console.log('started');
+  //   res.send(data.toString());
+  //   res.end('end');
   // });
-  // res.send("Hello World");
+
+  const url = req.query.url_id
+  let options = {
+        mode: 'text',
+        pythonOptions: ['-u'], // get print results in real-time
+        args: [url] //An argument which can be accessed in the script using sys.argv[1]
+  };
+  //
+  PythonShell.run('test.py', options, function (err, result){
+          if (err) throw err;
+          // console.log('result: ', result.toString());
+          res.json({result: result.toString()});
+  });
 });
 
 

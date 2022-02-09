@@ -11,14 +11,9 @@
 <h4>Get APIs</h4>
 ------------------------------------------------------------------<br>
 <form method='post' action="/api/users/userBody" name='userForm' target=targetURL>
-      <input type='button' value='GET /Hello' onclick='document.targetURL.location.href="/Hello"'>
-      <p>
-      <input type='button' value='GET /api/users' onclick='document.targetURL.location.href="/api/users"'>
-      <p>
-      id <input type='text' size='10' name='id'>
-      <input type='button' value='GET /api/users/user?params' onclick='document.targetURL.location.href="/api/users/user?user_id="+document.userForm.id.value'>
-      &nbsp;
-      <input type='button' value='GET /api/users/path' onclick='document.targetURL.location.href="/api/users/"+document.userForm.id.value'>
+
+      url <input type='text' size='10' name='url'>
+      <input type='button' value='GET /scrap?params' onclick='document.targetURL.location.href="/scrap/url?url_id="+document.userForm.url.value'>
       <p>
       name <input type='text' size='10' name='name'>
       <input type='button' value='GET /api/users/user?user_id&name' onclick='document.targetURL.location.href="/api/users/user?user_id="+document.userForm.id.value+"&name="+document.userForm.name.value'>
@@ -34,7 +29,7 @@
       <p>
 </form>
 ------------------------------------------------------------------<br>
-<iframe name=targetURL class="iframe-preview center" width="60%" height="500" style="border:none;" src="http://3.35.103.171:3000/api/users">
+<iframe name=targetURL class="iframe-preview center" width="60%" height="500" style="border:none;" src="http://3.35.103.171:3000/scrap">
 </iframe>
 </body>
 </html>
