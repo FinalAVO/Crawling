@@ -21,5 +21,5 @@ var restful = require('./routes/restful.js');
 app.use('/', restful);
 
 app.listen(app.get('port'), () =>{
-	console.log('3000 Port : 서버 실행 중')
+	console.log('3000 Port : server start')
 });

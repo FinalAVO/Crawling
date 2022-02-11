@@ -32,8 +32,9 @@ def appstore_crawler(url):
                 })
 
             print(result)
-            res_df = pd.DataFrame(result)
-            res_df.to_csv("./appstore_reviews.csv", encoding='utf-8-sig', index=False)
+            #res_df = pd.DataFrame(result)
+            #res_df.to_csv("./appstore_reviews.csv", encoding='utf-8-sig', index=False)
+            return
 
         except KeyError:
             print("Wrong URL")
