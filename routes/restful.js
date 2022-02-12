@@ -1,28 +1,49 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-
 const app = express();
+const {PythonShell} =require('python-shell');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended : false}));
 app.use(express.json());
 app.use(express.urlencoded({extended : false}));
 
-const spawn = require('child_process').spawn;
-const {PythonShell} =require('python-shell');
+const { Client } = require('node-scp');
+const fs = require('fs')
+const shell = require('shelljs');
 
 app.get("/scrap",(req, res) => {
-  res.send("Hello");
+  res.send("Crawling Done");
+});
+
+var local_file_path = './data/app_review.csv';
+var destination_file_path = '/data/node/review/data/app_review.csv';
+
+async function send_file() {
+  try {
+    const client = await Client({
+      host: '3.39.5.86', //remote host ip
+      port: 22, //port used for scp
+      username: 'bitnami', //username to authenticate
+      password: '', //password to authenticate
+      privateKey: fs.readFileSync('../LightsailDefaultKey-ap-northeast-2.pem'),
+    })
+    await client.uploadFile(local_file_path, destination_file_path)
+    client.close()
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+app.get("/scrap/google",(req, res) => {
+  // shell.exec('sh scraping.sh')
+  // shell.exec('sh export_mongo.sh')
+  // send_file()
+  res.send("Crawling Done");
+
 });
 
 app.get("/scrap/url",(req, res, next) => {
-  // var process = spawn('python', ['test.py']);
-  // process.stdout.on('data', function(data) {
-  //
-  //   console.log('started');
-  //   res.send(data.toString());
-  //   res.end('end');
-  // });
 
   const url = req.query.url_id
   let options = {
@@ -37,93 +58,6 @@ app.get("/scrap/url",(req, res, next) => {
           res.json({result: result.toString()});
   });
 });
-
-
-
-
-
-
-
-// const users = [
-//   { id:1, name: "User1" },
-//   { id:2, name: "User2" },
-//   { id:3, name: "User3" }
-// ];
-
-// // simple api
-// app.get("/Hello",(req, res) => {
-//   res.send("Hello World");
-// });
-//
-// // request param X, response O
-// app.get("/api/users",(req, res) => {
-//   res.json({ok:true, users:users});
-// });
-//
-// // query paramter, request param O, response O
-// app.get("/api/users/user",(req, res) => {
-//   const user_id = req.query.user_id
-//   const user = users.filter(data => data.id == user_id);
-//   res.json({ok:false, users:user});
-// });
-//
-// // path param, request param O, response O
-// app.get("/api/users/:user_id",(req, res) => {
-//   const user_id = req.params.user_id
-//   const user = users.filter(data => data.id == user_id);
-//   res.json({ok:true, users:user});
-// });
-//
-// // post, request body, response O
-// app.post("/api/users/userBody",(req, res) => {
-//   const user_id = req.body.id
-//   const user = users.filter(data => data.id == user_id);
-//   res.json({ok:true, users:user});
-// });
-//
-// // post, request body, response O
-// app.post("/api/users/add",(req, res) => {
-//   const { id, name } = req.body
-//   const user = users.concat({id, name});
-//   res.json({ok:true, users:user});
-// });
-//
-// // put, request body, response O
-// app.put("/api/users/update",(req, res) => {
-//   const { id, name } = req.body
-//   const user = users.map(data => {
-//     if(data.id == id) data.name = name
-//     return {
-//       id: data.id,
-//       name: data.name
-//     }
-//   });
-//   res.json({ok:true, users:user});
-// });
-//
-// // patch, request path param & body, response O
-// app.patch("/api/user/update/:user_id",(req, res) => {
-//   const { user_id } = req.params
-//   const { id, name } = req.body
-//   const user = users.map(data => {
-//     if(data.id == user_id) data.name = name
-//     return {
-//       id: data.id,
-//       name: data.name
-//     }
-//   });
-//   res.json({ok:true, users:user});
-// });
-//
-// // delete, request body, response O
-// app.delete("/api/user/delete",(req, res) => {
-//   const { user_id } = req.body
-//   const user = users.filter(data => data.id != user_id);
-//   res.json({ok:true, users:user});
-// });
-
-
-
 
 
 
