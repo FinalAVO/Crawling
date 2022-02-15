@@ -74,7 +74,7 @@ def appstore_crawler(app_id, app_name):
             for i in range(len(xml['feed']['entry'])):
                 review_fixed = xml['feed']['entry'][i]['content'][0]['#text'].replace("\n", " ")
                 result.append({
-                    'APP_ID': app_id,
+                    'APP_ID': "",
                     'APP_NAME' : app_name,
                     'USER': xml['feed']['entry'][i]['author']['name'],
                     'DATE': xml['feed']['entry'][i]['updated'],
@@ -82,7 +82,7 @@ def appstore_crawler(app_id, app_name):
                     'LIKE': int(xml['feed']['entry'][i]['im:voteSum']),
                     'TITLE': xml['feed']['entry'][i]['title'],
                     # 'REVIEW': xml['feed']['entry'][i]['content'][0]['#text']
-                    'REVIEW': review_fixed
+                    'COMMENT': review_fixed
                 })
 
         except KeyError:
