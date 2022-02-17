@@ -130,7 +130,6 @@ def playstore_crawler(app_id):
         }, ignore_index=True)
 
     #csv file로 저장
-    # filename = datetime.now().strftime('result/%Y-%m-%d_%H-%M-%S.csv')
     filename = "result/app_review_android.csv"
     df.to_csv(filename, encoding='utf-8-sig', index=False)
     driver.stop_client()

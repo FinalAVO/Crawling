@@ -106,7 +106,6 @@ def appstore_crawler(app_id, app_name):
 
     # print(result)
     res_df = pd.DataFrame(result)
-    # print(res_df[res_df["USER"] == "깅기잉콩"])
     res_df.to_csv("./result/app_review_ios.csv", encoding='utf-8-sig', index=False)
 
     # pip3 install subprocess.run
