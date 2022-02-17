@@ -30,7 +30,11 @@ def find_appid(app_name):
     browser.get(url)
 
     # 해당 a tag 안 url 찾기 *** 광고성이 있다면 어떻게 처리할지 ***
-    elem_url = browser.find_element(By.XPATH, '/html/body/div/div[1]/div[3]/div[3]/div[1]/div/ul/div/li[1]/div[1]/div/div/div[1]/a')
+    try:
+        elem_url = browser.find_element(By.XPATH, '/html/body/div/div[1]/div[3]/div[3]/div[1]/div/ul/div/li[1]/div[1]/div/div/div[1]/a')
+    except:
+        elem_url = browser.find_element(By.XPATH, '/html/body/div/div[1]/div[3]/div[2]/div[1]/div/ul/div/li[1]/div[1]/div/div/div[1]/a')
+
     app_url = elem_url.get_attribute('href')
 
     # url 분리해서 id찾기
@@ -38,7 +42,11 @@ def find_appid(app_name):
     app_id = url_sep[6][:url_sep[6].find("-")]
 
     # 실제 앱 이름 찾기
-    elem_name = browser.find_element(By.XPATH, '/html/body/div/div[1]/div[3]/div[3]/div[1]/div/ul/div/li[1]/div[1]/div/div/div[1]/a/div/span')
+    try:
+        elem_name = browser.find_element(By.XPATH, '/html/body/div/div[1]/div[3]/div[3]/div[1]/div/ul/div/li[1]/div[1]/div/div/div[1]/a/div/span')
+    except:
+        elem_name = browser.find_element(By.XPATH, '/html/body/div/div[1]/div[3]/div[2]/div[1]/div/ul/div/li[1]/div[1]/div/div/div[1]/a/div/span')
+
     real_app_name = elem_name.get_attribute('title')
 
     return (app_id, real_app_name)
@@ -107,8 +115,8 @@ def appstore_crawler(app_id, app_name):
     return
 
 # request에서 받아오는 parameter
-app_name = "카카오톡"
-# app_name = sys.argv[1]
+# app_name = "페이스북"
+app_name = sys.argv[1]
 
 app_id, real_app_name = find_appid(app_name)
 appstore_crawler(app_id, real_app_name)

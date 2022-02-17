@@ -20,7 +20,33 @@ def find_app_id(app_name):
     driver = webdriver.Chrome('./chromedriver', options=option)
     link = "https://play.google.com/store/search?q=" + str(app_name) + "&c=apps&hl=ko&gl=KR"
     driver.get(link)
-    elem_url = driver.find_element(By.XPATH, '/html/body/c-wiz[2]/div/div/c-wiz/c-wiz[1]/c-wiz/section/div/div/a')
+
+    flag = False
+    for i in range(1,10):
+        try:
+            elem_url = driver.find_element(By.XPATH, '/html/body/c-wiz[' + str(i) + ']/div/div/c-wiz/c-wiz[1]/c-wiz/section/div/div/a')
+            flag=True
+            break
+        except:
+            continue
+
+    if(flag == False):
+        for i in range(1,10):
+            try:
+                elem_url = driver.find_element(By.XPATH, '/html/body/c-wiz[' + str(i) + ']/div/div/c-wiz/c-wiz[1]/c-wiz/section/div/div/div/div[1]/div[1]/div/div/div/a')
+                flag=True
+                break
+            except:
+                continue
+
+    if(flag == False):
+        for i in range(1,10):
+            try:
+                elem_url = driver.find_element(By.XPATH, '/html/body/c-wiz[' + str(i) + ']/div/div/c-wiz/c-wiz/c-wiz/section/div/div/div[1]/div/div/div/a')
+                break
+            except:
+                continue
+
     app_url = elem_url.get_attribute('href')
 
     url_sep = app_url.split('/')
@@ -113,7 +139,8 @@ def playstore_crawler(app_id):
 
     print('DONE!')
 
-# app_name = "오딘"
+# app_name = "유튜브"
+
 app_name = sys.argv[1]
 app_id = find_app_id(app_name)
 playstore_crawler(app_id)
