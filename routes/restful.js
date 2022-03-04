@@ -43,7 +43,7 @@ app.get("/scrap/google",(req, res) => {
 
 app.get("/scrap",(req, res, next) => {
   var app_name = req.query.app_name
-
+  console.log(app_name)
   if (!app_name) {
     res.send("Empty App Name");
   }
