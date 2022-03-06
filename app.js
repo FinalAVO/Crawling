@@ -20,6 +20,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 var restful = require('./routes/restful.js');
 app.use('/', restful);
 
+var search = require('./routes/search.js');
+app.use('/search', search);
+
 app.listen(app.get('port'), () =>{
 	console.log('3000 Port : server start')
 });

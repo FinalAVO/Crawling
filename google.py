@@ -63,6 +63,14 @@ def playstore_crawler(app_id):
 
     os.makedirs('result', exist_ok=True)
 
+    box = driver.find_element_by_xpath('/html/body/div[1]/div[4]/c-wiz/div/div[2]/div/div/main/div/div[1]/div[2]/c-wiz/div[1]/div')
+    box.click()
+
+    time.sleep(1)
+
+    box2 = driver.find_element_by_xpath('/html/body/div[1]/div[4]/c-wiz/div/div[2]/div/div/main/div/div[1]/div[2]/c-wiz/div[1]/div/div[2]/div[1]')
+    box2.click()
+
     scroll_cnt = 1
     #스크롤 횟수 정하기
     for i in range(scroll_cnt):
@@ -86,11 +94,15 @@ def playstore_crawler(app_id):
     print('Writing the data...')
 
     # #리뷰를 데이터프레임에 저장
-    df = pd.DataFrame(columns=['APP_NAME','USER', 'DATE', 'STAR', 'LIKE', 'COMMENT' ])
+    df = pd.DataFrame(columns=['APP_IMG', 'APP_NAME','USER', 'DATE', 'STAR', 'LIKE', 'COMMENT' ])
 
     # #리뷰테이터 GET
     for review in reviews:
         soup = BeautifulSoup(review.get_attribute('innerHTML'), 'html.parser')
+
+        #APP_IMG
+        IMG_url = driver.find_element(By.XPATH, '/html/body/div[1]/div[4]/c-wiz/div/div[2]/div/div/main/c-wiz/c-wiz[1]/div/div[1]/div/img')
+        APP_IMG = IMG_url.get_attribute('src')
 
         #APP_NAME
         #APP_NAME = soup.find('span', class_='AHFaub').text
@@ -119,6 +131,7 @@ def playstore_crawler(app_id):
         #append to DataFrame
         df = df.append({
             'id': "",
+            'APP_IMG' : APP_IMG,
             'APP_NAME': APP_NAME,
             'USER': USER,
             'DATE': DATE,
@@ -134,11 +147,9 @@ def playstore_crawler(app_id):
     df.to_csv(filename, encoding='utf-8-sig', index=False)
     driver.stop_client()
 
-
-
     print('DONE!')
 
-# app_name = "유튜브"
+# app_name = "오딘"
 
 app_name = sys.argv[1]
 app_id = find_app_id(app_name)

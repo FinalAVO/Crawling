@@ -67,10 +67,6 @@ app.get("/scrap",(req, res, next) => {
     res.send("Crawling Done");
   }
 
-
 });
-
-
-
 
 module.exports = app;
