@@ -16,45 +16,45 @@ option.add_argument('headless')
 
 
 
-def find_app_id(app_name):
-    driver = webdriver.Chrome('./chromedriver', options=option)
-    link = "https://play.google.com/store/search?q=" + str(app_name) + "&c=apps&hl=ko&gl=KR"
-    driver.get(link)
+# def find_app_id(app_name):
+#     driver = webdriver.Chrome('./chromedriver', options=option)
+#     link = "https://play.google.com/store/search?q=" + str(app_name) + "&c=apps&hl=ko&gl=KR"
+#     driver.get(link)
+#
+#     flag = False
+#     for i in range(1,10):
+#         try:
+#             elem_url = driver.find_element(By.XPATH, '/html/body/c-wiz[' + str(i) + ']/div/div/c-wiz/c-wiz[1]/c-wiz/section/div/div/a')
+#             flag=True
+#             break
+#         except:
+#             continue
+#
+#     if(flag == False):
+#         for i in range(1,10):
+#             try:
+#                 elem_url = driver.find_element(By.XPATH, '/html/body/c-wiz[' + str(i) + ']/div/div/c-wiz/c-wiz[1]/c-wiz/section/div/div/div/div[1]/div[1]/div/div/div/a')
+#                 flag=True
+#                 break
+#             except:
+#                 continue
+#
+#     if(flag == False):
+#         for i in range(1,10):
+#             try:
+#                 elem_url = driver.find_element(By.XPATH, '/html/body/c-wiz[' + str(i) + ']/div/div/c-wiz/c-wiz/c-wiz/section/div/div/div[1]/div/div/div/a')
+#                 break
+#             except:
+#                 continue
+#
+#     app_url = elem_url.get_attribute('href')
+#
+#     url_sep = app_url.split('/')
+#     app_id = url_sep[5][url_sep[5].find("=")+1:]
+#     return app_id
 
-    flag = False
-    for i in range(1,10):
-        try:
-            elem_url = driver.find_element(By.XPATH, '/html/body/c-wiz[' + str(i) + ']/div/div/c-wiz/c-wiz[1]/c-wiz/section/div/div/a')
-            flag=True
-            break
-        except:
-            continue
 
-    if(flag == False):
-        for i in range(1,10):
-            try:
-                elem_url = driver.find_element(By.XPATH, '/html/body/c-wiz[' + str(i) + ']/div/div/c-wiz/c-wiz[1]/c-wiz/section/div/div/div/div[1]/div[1]/div/div/div/a')
-                flag=True
-                break
-            except:
-                continue
-
-    if(flag == False):
-        for i in range(1,10):
-            try:
-                elem_url = driver.find_element(By.XPATH, '/html/body/c-wiz[' + str(i) + ']/div/div/c-wiz/c-wiz/c-wiz/section/div/div/div[1]/div/div/div/a')
-                break
-            except:
-                continue
-
-    app_url = elem_url.get_attribute('href')
-
-    url_sep = app_url.split('/')
-    app_id = url_sep[5][url_sep[5].find("=")+1:]
-    return app_id
-
-
-#com.kakaogames.odin
+#리뷰 링크 접속
 def playstore_crawler(app_id):
     driver = webdriver.Chrome('./chromedriver', options=option)
     link = 'https://play.google.com/store/apps/details?id=' + str(app_id) + '&hl=ko&gl=US&showAllReviews=true'
@@ -80,18 +80,15 @@ def playstore_crawler(app_id):
 
         #더보기 버튼 클릭
         try:
-            #load_more = driver.find_element(By.xpath, '/html/body/div[1]/div[4]/c-wiz[3]/div/div[2]/div/div/main/div/div[1]/div[2]/div[2]/div/div[2]').click()
             load_more = driver.find_element_by_xpath('//*[contains(@class, "U26fgb O0WRkf oG5Srb C0oVfc n9lfJ M9Bg4d")]').click()
         except:
-            print('Cannot find load more button..')
+            continue
+            # print('Cannot find load more button..')
 
 
 
     #리뷰 컨테이너 가져오기
     reviews = driver.find_elements(By.XPATH, '//*[@jsname="fk8dgd"]//div[@class="d15Mdf bAhLNe"]')
-
-    print('There are %d reviews available!' % len(reviews))
-    print('Writing the data...')
 
     # #리뷰를 데이터프레임에 저장
     df = pd.DataFrame(columns=['APP_IMG', 'APP_NAME','USER', 'DATE', 'STAR', 'LIKE', 'COMMENT' ])
@@ -105,7 +102,6 @@ def playstore_crawler(app_id):
         APP_IMG = IMG_url.get_attribute('src')
 
         #APP_NAME
-        #APP_NAME = soup.find('span', class_='AHFaub').text
         APP_NAME = driver.find_element(By.XPATH, '/html/body/div[1]/div[4]/c-wiz/div/div[2]/div/div/main/c-wiz/c-wiz[1]/div/div[2]/div/div[1]/c-wiz[1]/h1/span').text
 
         #user
@@ -147,10 +143,10 @@ def playstore_crawler(app_id):
     df.to_csv(filename, encoding='utf-8-sig', index=False)
     driver.stop_client()
 
-    print('DONE!')
+    print('Google Done')
 
 # app_name = "오딘"
 
-app_name = sys.argv[1]
-app_id = find_app_id(app_name)
+app_id  = sys.argv[1]
+# app_id = find_app_id(app_name)
 playstore_crawler(app_id)

@@ -15,8 +15,14 @@ app.get('/', (req, res) => {
 	}
 
 	var condition = req.query.condition;
+	var sc;
 	if(!condition){
 		condition = "DATE";
+	}else if (condition.indexOf('-') != -1) {
+		sc = -1;
+		condition = condition.slice(1);
+	}else{
+		sc = 1;
 	}
 
 	mongoClient.connect(databaseUrl, function(err, database){
@@ -27,13 +33,13 @@ app.get('/', (req, res) => {
 		}else{
 			db = database.db('review');
 			if(!filter){
-				db.collection('오딘').find({ APP_NAME: { $regex: app_name, $options: "i"} }, { _id: 0 }).sort({ [condition]: 1 }).toArray(function(err, result){
+				db.collection(app_name).find({ }, { _id: 0 }).sort({ [condition]: sc }).toArray(function(err, result){
 					if(err) throw err;
 					console.log('review : ' + result);
 					res.send(JSON.stringify(result));
 				});
 			}else{
-				db.collection('오딘').find({ APP_NAME:  { $regex: app_name, $options: "i"}, COMMENT: filter }, { _id: 0 }).sort({ [condition]: 1 }).toArray(function(err, result){
+				db.collection(app_name).find({ COMMENT: filter }, { _id: 0 }).sort({ [condition]: sc }).toArray(function(err, result){
 					if(err) throw err;
 					console.log('result : ' + result);
 					res.send(JSON.stringify(result));
