@@ -71,7 +71,7 @@ def playstore_crawler(app_id):
     box2 = driver.find_element_by_xpath('/html/body/div[1]/div[4]/c-wiz/div/div[2]/div/div/main/div/div[1]/div[2]/c-wiz/div[1]/div/div[2]/div[1]')
     box2.click()
 
-    scroll_cnt = 1
+    scroll_cnt = 10
     #스크롤 횟수 정하기
     for i in range(scroll_cnt):
 
@@ -110,7 +110,7 @@ def playstore_crawler(app_id):
         #review date
         DATE = soup.find(class_='p2TkOb').text
         #DATE = datetime.strptime(DATE, '%Y년 %m월 %d일')
-        #DATE = DATE.strftime('%Y-%m-%d')
+        DATE = DATE.strftime('%Y-%m-%d')
 
         #STAR
         STAR = int(soup.find("div", role="img").get('aria-label').replace('별표 5개 만점에',  '').replace('개를 받았습니다.', '').strip())

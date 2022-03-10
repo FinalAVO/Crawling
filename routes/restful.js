@@ -116,21 +116,21 @@ app.get("/scrap", function(req, res){
 });
 
 let get_app_name = function(options, callback){
-  PythonShell.run('app_id.py', options, function (err, result){
+  PythonShell.run('./python_script/app_id.py', options, function (err, result){
           if (err) throw err;
           callback(result[0], result[1], result[2], result[3]);
   });
 }
 
 let crawl_apple = function(options, callback){
-  PythonShell.run('apple.py', options, function (err, result){
+  PythonShell.run('./python_script/apple.py', options, function (err, result){
           if (err) throw err;
           callback(result);
   });
 }
 
 let crawl_google = function(options, callback){
-  PythonShell.run('google.py', options, function (err, result){
+  PythonShell.run('./python_script/google.py', options, function (err, result){
           if (err) throw err;
           callback(result);
   });
