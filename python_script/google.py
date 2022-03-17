@@ -57,6 +57,8 @@ option.add_argument('headless')
 #리뷰 링크 접속
 def playstore_crawler(app_id):
     driver = webdriver.Chrome('./chromedriver', options=option)
+    driver.set_window_position(0, 0)
+    driver.set_window_size(1500, 900)
     link = 'https://play.google.com/store/apps/details?id=' + str(app_id) + '&hl=ko&gl=US&showAllReviews=true'
     driver.get(link)
 
@@ -76,7 +78,7 @@ def playstore_crawler(app_id):
     for i in range(scroll_cnt):
 
         driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-        time.sleep(2)
+        time.sleep(1.5)
 
         #더보기 버튼 클릭
         try:
@@ -109,7 +111,7 @@ def playstore_crawler(app_id):
 
         #review date
         DATE = soup.find(class_='p2TkOb').text
-        #DATE = datetime.strptime(DATE, '%Y년 %m월 %d일')
+        DATE = datetime.strptime(DATE, '%Y년 %m월 %d일')
         DATE = DATE.strftime('%Y-%m-%d')
 
         #STAR
@@ -139,13 +141,13 @@ def playstore_crawler(app_id):
         }, ignore_index=True)
 
     #csv file로 저장
-    filename = "result/app_review_android.csv"
+    filename = "/data/Crawling/result/app_review_android.csv"
     df.to_csv(filename, encoding='utf-8-sig', index=False)
     driver.stop_client()
 
     print('Google Done')
 
-# app_name = "오딘"
+# app_name = "페이스북"
 
 app_id  = sys.argv[1]
 # app_id = find_app_id(app_name)

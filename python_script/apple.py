@@ -77,7 +77,7 @@ def appstore_crawler(app_id, app_name):
     result = []
 
     # 모든 페이지 받아오기
-    for idx in range(2, last_index+1):
+    for idx in range(1, last_index+1):
         url = "https://itunes.apple.com/kr/rss/customerreviews/page=" + str(idx) + "/id=" + app_id + "/json"
         response = requests.get(url)
         _json = response.json()
@@ -104,7 +104,7 @@ def appstore_crawler(app_id, app_name):
 
     # print(result)
     res_df = pd.DataFrame(result)
-    res_df.to_csv("result/app_review_ios.csv", encoding='utf-8-sig', index=False)
+    res_df.to_csv("/data/Crawling/result/app_review_ios.csv", encoding='utf-8-sig', index=False)
 
     print("Apple Done")
     # pip3 install subprocess.run
