@@ -5,6 +5,8 @@ import pandas as pd
 from datetime import datetime
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+import warnings
+warnings.filterwarnings("ignore")
 
 option = Options()
 option.add_argument("disable-infobars")
@@ -15,48 +17,9 @@ option.add_argument('disable-gpu')
 option.add_argument('headless')
 
 
-
-# def find_app_id(app_name):
-#     driver = webdriver.Chrome('./chromedriver', options=option)
-#     link = "https://play.google.com/store/search?q=" + str(app_name) + "&c=apps&hl=ko&gl=KR"
-#     driver.get(link)
-#
-#     flag = False
-#     for i in range(1,10):
-#         try:
-#             elem_url = driver.find_element(By.XPATH, '/html/body/c-wiz[' + str(i) + ']/div/div/c-wiz/c-wiz[1]/c-wiz/section/div/div/a')
-#             flag=True
-#             break
-#         except:
-#             continue
-#
-#     if(flag == False):
-#         for i in range(1,10):
-#             try:
-#                 elem_url = driver.find_element(By.XPATH, '/html/body/c-wiz[' + str(i) + ']/div/div/c-wiz/c-wiz[1]/c-wiz/section/div/div/div/div[1]/div[1]/div/div/div/a')
-#                 flag=True
-#                 break
-#             except:
-#                 continue
-#
-#     if(flag == False):
-#         for i in range(1,10):
-#             try:
-#                 elem_url = driver.find_element(By.XPATH, '/html/body/c-wiz[' + str(i) + ']/div/div/c-wiz/c-wiz/c-wiz/section/div/div/div[1]/div/div/div/a')
-#                 break
-#             except:
-#                 continue
-#
-#     app_url = elem_url.get_attribute('href')
-#
-#     url_sep = app_url.split('/')
-#     app_id = url_sep[5][url_sep[5].find("=")+1:]
-#     return app_id
-
-
 #리뷰 링크 접속
-def playstore_crawler(app_id):
-    driver = webdriver.Chrome('./chromedriver', options=option)
+def playstore_crawler(app_id, purpose, app_name_for_db):
+    driver = webdriver.Chrome('/data/Crawling/chromedriver', options=option)
     driver.set_window_position(0, 0)
     driver.set_window_size(1500, 900)
     link = 'https://play.google.com/store/apps/details?id=' + str(app_id) + '&hl=ko&gl=US&showAllReviews=true'
@@ -114,6 +77,7 @@ def playstore_crawler(app_id):
         DATE = datetime.strptime(DATE, '%Y년 %m월 %d일')
         DATE = DATE.strftime('%Y-%m-%d')
 
+
         #STAR
         STAR = int(soup.find("div", role="img").get('aria-label').replace('별표 5개 만점에',  '').replace('개를 받았습니다.', '').strip())
 
@@ -128,27 +92,34 @@ def playstore_crawler(app_id):
 
         #append to DataFrame
         df = df.append({
-            'id': "",
             'APP_IMG' : APP_IMG,
             'APP_NAME': APP_NAME,
             'USER': USER,
             'DATE': DATE,
             'STAR': STAR,
             'LIKE': LIKE,
-            'TITLE': "non-title",
             'COMMENT': COMMENT,
             'OS': "android"
         }, ignore_index=True)
 
-    #csv file로 저장
-    filename = "/data/Crawling/result/app_review_android.csv"
-    df.to_csv(filename, encoding='utf-8-sig', index=False)
-    driver.stop_client()
+    df['DATE'] = pd.to_datetime(df['DATE'])
+    df['DATE'] = df['DATE'].dt.tz_localize('Asia/Seoul')
 
+    #csv file로 저장
+    if purpose == "update":
+        filename = "/data/Crawling/update/" + app_name_for_db + "_app_review_android.csv"
+        df.to_csv(filename, encoding='utf-8-sig', index=False)
+    else:
+        filename = "/data/Crawling/result/" + app_name_for_db + "_app_review_android.csv"
+        df.to_csv(filename, encoding='utf-8-sig', index=False)
+
+    driver.stop_client()
     print('Google Done')
 
 # app_name = "페이스북"
 
 app_id  = sys.argv[1]
+purpose = sys.argv[2]
+app_name_for_db = sys.argv[3]
 # app_id = find_app_id(app_name)
-playstore_crawler(app_id)
+playstore_crawler(app_id, purpose, app_name_for_db)

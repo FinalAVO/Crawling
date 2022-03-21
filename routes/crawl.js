@@ -6,7 +6,8 @@ const fs = require('fs')
 const shell = require('shelljs');
 const mysql = require('mysql');
 const axios = require('axios');
-
+const { createClient } = require('redis');
+const moment = require('moment-timezone');
 const app = express();
 
 app.use(bodyParser.json());
@@ -14,23 +15,27 @@ app.use(bodyParser.urlencoded({extended : false}));
 app.use(express.json());
 app.use(express.urlencoded({extended : false}));
 
-let mysql_rawdata = fs.readFileSync('/data/Crawling/config/mysql.json');
+let mysql_rawdata = fs.readFileSync('/data/Crawling/config/rds_config.json');
 let mysql_json = JSON.parse(mysql_rawdata);
 
-var connection = mysql.createConnection({
+const rdsConnection = mysql.createConnection({
   host     : mysql_json["host"],
   user     : mysql_json["user"],
   password : mysql_json["password"],
   database : mysql_json["database"]
 });
 
+const redisClient = createClient({
+  url: 'redis://:1234@3.37.3.24:6379'
+});
+
 
 // 앱을 RDS crawling_log에서 찾기 위한 API
 app.get("/scrap", function(req, res){
   var app_name = req.query.app_name
-  var filter = req.query.filter;
-  var condition = req.query.condition;
-  var os = req.query.os
+  // var filter = req.query.filter;
+  // var condition = req.query.condition;
+  // var os = req.query.os
 
   if (!app_name) {
     console.log("Empty App Name");
@@ -47,7 +52,7 @@ app.get("/scrap", function(req, res){
 
   get_app_name(options, function(apple_app_id, google_app_id, app_name_for_db, real_app_name){
 
-    connection.connect(function(err){
+    rdsConnection.connect(function(err){
       if(!err) {
           console.log("RDS is connected ... \n");
       } else {
@@ -59,8 +64,8 @@ app.get("/scrap", function(req, res){
 
     sql = 'SELECT * FROM crawling_log WHERE app_name LIKE ?';
     var app_name_sql = '%' + app_name + '%'
-    connection.query(sql, [app_name_sql], function(err, result){
-      // connection.end();
+    rdsConnection.query(sql, [app_name_sql], function(err, result){
+      // rdsConnection.end();
       if(err){
         console.log('Error while performing Query.');
         res.send("Error while performing Query.")
@@ -68,24 +73,35 @@ app.get("/scrap", function(req, res){
 
       if(result == ''){
         // 만약 크롤링 로그 테이블에 전처리된 app_name이 존재하지 않는다면
-        console.log("Not Found on log table ... \nCrawling started ... \n");
+        console.log("Not Found on log table ... ");
 
-        axios.post("http://3.34.14.98:3000/crawl", {
-            apple_app_id: apple_app_id,
-            google_app_id: google_app_id,
-            app_name_for_db: app_name_for_db,
-            real_app_name: real_app_name
-        })
-        .then(function (response) {
-        	res.send(response.data);
-        })
-        .catch(function (error) {
-        	console.log(error);
+        checking_redis(app_name_for_db, function(message){
+          if (message == "Already in progress"){
+            console.log(message)
+
+            res.send("Already in progress")
+
+          } else {
+            console.log(message)
+
+            axios.post("http://3.34.14.98:3000/crawl", {
+                apple_app_id: apple_app_id,
+                google_app_id: google_app_id,
+                app_name_for_db: app_name_for_db,
+                real_app_name: real_app_name
+            })
+            .then(function (response) {
+            	res.send(response.data);
+            })
+            .catch(function (error) {
+            	console.log(error);
+            });
+          }
         });
+
 
       } else {
         // 만약 크롤링 로그 테이블에 전처리된 app_name이 존재한다면
-        // app_name_for_db를 res로 보내고 다시 app_name_for_db, filter, condition을 쿼리로 search.js로 넘겨주는 펑션 쓰기 (프론트에)
         console.log("Already exist in log table ... \n");
         res.send(app_name_for_db);
       }
@@ -101,10 +117,22 @@ app.post("/crawl", function(req, res){
   var app_name_for_db = req.body.app_name_for_db;
   var real_app_name = req.body.real_app_name;
 
+  (async () => {
+    console.log("/crawl API");
+
+    redisClient.on('error', (err) => console.log('Redis Client Error', err));
+
+    await redisClient.connect();
+
+    await redisClient.set(app_name_for_db, 'working');
+    await redisClient.expire(app_name_for_db, 60);
+    redisClient.quit();
+  })();
+
   let options_apple = {
         mode: 'text',
         pythonOptions: ['-u'],
-        args: [apple_app_id, real_app_name]
+        args: [apple_app_id, real_app_name, "crawl", app_name_for_db]
   };
 
   crawl_apple(options_apple, function(message){
@@ -119,7 +147,7 @@ app.post("/crawl", function(req, res){
   let options_google = {
         mode: 'text',
         pythonOptions: ['-u'],
-        args: [google_app_id]
+        args: [google_app_id, "crawl", app_name_for_db]
   };
 
   crawl_google(options_google, function(message){
@@ -128,11 +156,11 @@ app.post("/crawl", function(req, res){
 
       shell.exec('sh /data/Crawling/shell_file/mongo_google.sh ' + app_name_for_db);
 
-      // app_name_for_db를 res로 보내고 다시 app_name_for_db, filter, condition을 쿼리로 search.js로 넘겨주는 펑션 쓰기 (프론트에)
-      // var url = 'http://3.34.14.98:3000/search?app_name_for_db=' + app_name_for_db + '&filter=' + filter + '&condition=' + condition;
-
       axios.post("http://3.34.14.98:3000/insert", {
           app_name_for_db: app_name_for_db,
+          apple_app_id: apple_app_id,
+          google_app_id: google_app_id,
+          real_app_name: real_app_name
       })
       .then(function (response) {
         res.send(response.data);
@@ -150,8 +178,11 @@ app.post("/crawl", function(req, res){
 
 app.post("/insert", function(req,res){
   var app_name_for_db = req.body.app_name_for_db;
+  var apple_app_id = req.body.apple_app_id;
+  var google_app_id = req.body.google_app_id;
+  var real_app_name = req.body.real_app_name;
 
-  insert_RDS(app_name_for_db, function(message){
+  insert_RDS(app_name_for_db, apple_app_id, google_app_id, real_app_name, function(message){
     if (message == "crawling_log insert succeeded"){
       console.log("Crawling succeeded");
       res.send(app_name_for_db);
@@ -162,35 +193,59 @@ app.post("/insert", function(req,res){
 });
 
 
+let checking_redis = function(app_name_for_db, callback){
+  (async () => {
+    console.log("Check in redis ... ");
+
+    redisClient.on('error', (err) => console.log('Redis Client Error', err));
+
+    await redisClient.connect();
+
+    const value = await redisClient.get(app_name_for_db);
+    var message;
+
+    if (value == "working"){
+      redisClient.quit();
+      message = "Already in progress"
+      callback(message);
+    } else{
+      redisClient.quit();
+      message = "Not in progress"
+      callback(message)
+    }
+  })();
+}
+
 let get_app_name = function(options, callback){
-  PythonShell.run('./python_script/app_id.py', options, function (err, result){
+  PythonShell.run('/data/Crawling/python_script/app_id.py', options, function (err, result){
           if (err) throw err;
           callback(result[0], result[1], result[2], result[3]);
   });
 }
 
 let crawl_apple = function(options, callback){
-  PythonShell.run('./python_script/apple.py', options, function (err, result){
+  PythonShell.run('/data/Crawling/python_script/apple.py', options, function (err, result){
           if (err) throw err;
           callback(result);
   });
 }
 
 let crawl_google = function(options, callback){
-  PythonShell.run('./python_script/google.py', options, function (err, result){
+  PythonShell.run('/data/Crawling/python_script/google.py', options, function (err, result){
           if (err) throw err;
           callback(result);
   });
 }
 
-let insert_RDS = function (app_name_for_db, callback){
+let insert_RDS = function (app_name_for_db, apple_app_id, google_app_id, real_app_name, callback){
   // RDS테이블에 app_name_for_db와 현재 시간 넣기
-  var sql = 'INSERT INTO crawling_log (app_name) VALUES (?);';
-  // 한국시간으로 바꾸기
-  // var timestamp = new Date().toISOString();
-  // console.log(timestamp);
+  var sql = 'INSERT INTO crawling_log (app_name, apple_app_id, google_app_id, real_app_name) VALUES (?, ?, ?, ?);';
 
-  connection.query(sql, [app_name_for_db], function(err, result){
+  // 한국시간으로 바꾸기
+  // var time = moment.tz(new Date(), 'Asia/Seoul').format()
+
+
+  rdsConnection.query(sql, [app_name_for_db, apple_app_id, google_app_id, real_app_name], function(err, result){
     if(err) {
       console.log("crawling_log insert failed")
       callback("crawling_log insert failed")
