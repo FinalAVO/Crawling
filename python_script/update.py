@@ -111,4 +111,12 @@ for idx in range(len(log)):
     real_app_name = log.iloc[idx][4]
 
     update_apple(apple_app_id, real_app_name, app_name_for_db, crawled_date)
-    # update_google(google_app_id, app_name_for_db)
+
+    update_sql = 'UPDATE crawling_log SET date = current_timestamp() WHERE app_name = "' + app_name_for_db + '";'
+    cursor = cnx.cursor()
+    cursor.execute(update_sql)
+    cnx.commit()
+
+    update_google(google_app_id, app_name_for_db)
+
+    print(app_name_for_db, ": updated done!")

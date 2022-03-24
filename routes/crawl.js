@@ -62,9 +62,9 @@ app.get("/scrap", function(req, res){
 
     console.log("Searching thru log table");
 
-    sql = 'SELECT * FROM crawling_log WHERE app_name LIKE ?';
-    var app_name_sql = '%' + app_name + '%'
-    rdsConnection.query(sql, [app_name_sql], function(err, result){
+    sql = 'SELECT * FROM crawling_log WHERE app_name = ?';
+
+    rdsConnection.query(sql, [app_name_for_db], function(err, result){
       // rdsConnection.end();
       if(err){
         console.log('Error while performing Query.');

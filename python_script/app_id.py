@@ -48,7 +48,8 @@ def find_app_id(app_name):
     the_page = json.loads(the_page)
 
     # url 분리해서 id찾기
-    app_id2 = the_page['results'][0]['trackId']
+    apple_id = the_page['results'][0]['trackId']
+
     # url_sep = app_url.split('/')
     # app_id2 = url_sep[6][:url_sep[6].find("-")]
 
@@ -69,18 +70,19 @@ def find_app_id(app_name):
 
 
     # GOOGLE APP_ID
-    driver = webdriver.Chrome('./chromedriver', options=option)
+    driver = webdriver.Chrome('/data/Crawling/chromedriver', options=option)
     link = "https://play.google.com/store/search?q=" + str(app[1:]) + "&c=apps&hl=ko&gl=KR"
     driver.get(link)
 
     flag = False
     for i in range(1,10):
-        try:
-            elem_url = driver.find_element(By.XPATH, '/html/body/c-wiz[' + str(i) + ']/div/div/c-wiz/c-wiz[1]/c-wiz/section/div/div/a')
-            flag=True
-            break
-        except:
-            continue
+        for j in range(1,3):
+            try:
+                elem_url = driver.find_element(By.XPATH, '/html/body/c-wiz[' + str(i) + ']/div/div/c-wiz/c-wiz[' + str(j) + ']/c-wiz/section/div/div/a')
+                flag=True
+                break
+            except:
+                continue
 
     if(flag == False):
         for i in range(1,10):
@@ -102,16 +104,16 @@ def find_app_id(app_name):
     app_url = elem_url.get_attribute('href')
 
     url_sep = app_url.split('/')
-    app_id = url_sep[5][url_sep[5].find("=")+1:]
+    google_id = url_sep[5][url_sep[5].find("=")+1:]
 
-    return (app_id, app_id2, app, real_app_name)
+    return (google_id, apple_id, app, real_app_name)
 
 # app_name = "오딘"
 app_name = sys.argv[1]
 
-app_id, app_id2, app, real_app_name = find_app_id(app_name)
+google_id, apple_id, app, real_app_name = find_app_id(app_name)
 
-print(app_id2)
-print(app_id)
+print(apple_id)
+print(google_id)
 print(app)
 print(real_app_name)
