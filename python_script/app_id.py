@@ -40,12 +40,19 @@ def find_app_id(app_name):
               'media' : 'software',
               'limit' : '1'}
 
-    data = urllib.parse.urlencode(values)
-    data = data.encode('utf-8') # data should be bytes
-    req = urllib.request.Request(url, data)
-    with urllib.request.urlopen(req) as response:
-        the_page = response.read()
-    the_page = json.loads(the_page)
+    url_ = requests.get(url, params=values)
+    url_.encoding = 'utf-8'
+    the_page = url_.json()
+
+    # import urllib.parse
+    # import urllib.request
+    #
+    # data = urllib.parse.urlencode(values)
+    # data = data.encode('utf-8')
+    # req = urllib.request.Request(url, data)
+    # with urllib.request.urlopen(req) as response:
+    #     the_page = response.read()
+    # the_page = json.loads(the_page)
 
     # url 분리해서 id찾기
     apple_id = the_page['results'][0]['trackId']
@@ -111,9 +118,15 @@ def find_app_id(app_name):
 # app_name = "오딘"
 app_name = sys.argv[1]
 
-google_id, apple_id, app, real_app_name = find_app_id(app_name)
+try:
+    google_id, apple_id, app, real_app_name = find_app_id(app_name)
 
-print(apple_id)
-print(google_id)
-print(app)
-print(real_app_name)
+    print(apple_id)
+    print(google_id)
+    print(app)
+    print(real_app_name)
+except:
+    print("SSL issue")
+    print("SSL issue")
+    print("SSL issue")
+    print("SSL issue")

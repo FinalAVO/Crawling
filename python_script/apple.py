@@ -9,9 +9,6 @@ import os
 import json
 import sys
 from datetime import datetime
-# from pytz import timezone
-# import subprocess
-
 
 # 마지막 페이지 인덱스 찾기
 def get_page_index(_json):
@@ -28,9 +25,7 @@ def appstore_crawler(app_id, app_name, purpose, app_name_for_db):
         return
 
     url = "https://itunes.apple.com/kr/rss/customerreviews/id=" + app_id + "/json"
-    # print(url)
 
-    # response = requests.get(url).content.decode('utf8')
     response = requests.get(url)
     _json = response.json()
 
@@ -54,7 +49,6 @@ def appstore_crawler(app_id, app_name, purpose, app_name_for_db):
                     'DATE': _json['feed']['entry'][i]['updated']['label'],
                     'STAR': int(_json['feed']['entry'][i]['im:rating']['label']),
                     'LIKE': int(_json['feed']['entry'][i]['im:voteSum']['label']),
-                    # 'TITLE': _json['feed']['entry'][i]['title']['label'],
                     'COMMENT': review_fixed,
                     'OS': "ios"
                 })
@@ -63,7 +57,6 @@ def appstore_crawler(app_id, app_name, purpose, app_name_for_db):
             print("Wrong URL")
             return
 
-    # print(result)
     res_df = pd.DataFrame(result)
     res_df['DATE'] = pd.to_datetime(res_df['DATE'])
     res_df['DATE'] = res_df['DATE'].dt.tz_convert('Asia/Seoul')

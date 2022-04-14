@@ -1,4 +1,3 @@
-import pymysql
 import mysql.connector
 import pymongo
 from pymongo import MongoClient

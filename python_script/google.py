@@ -11,7 +11,6 @@ warnings.filterwarnings("ignore")
 option = Options()
 option.add_argument("disable-infobars")
 option.add_argument("disable-extensions")
-# option.add_argument("start-maximized")
 option.add_argument('—no-sandbox')
 option.add_argument('disable-gpu')
 option.add_argument('headless')
@@ -24,7 +23,6 @@ def playstore_crawler(app_id, purpose, app_name_for_db):
     driver.set_window_size(1500, 900)
     link = 'https://play.google.com/store/apps/details?id=' + str(app_id) + '&hl=ko&gl=US&showAllReviews=true'
     driver.get(link)
-
 
     os.makedirs('result', exist_ok=True)
 
@@ -48,9 +46,6 @@ def playstore_crawler(app_id, purpose, app_name_for_db):
             load_more = driver.find_element_by_xpath('//*[contains(@class, "U26fgb O0WRkf oG5Srb C0oVfc n9lfJ M9Bg4d")]').click()
         except:
             continue
-            # print('Cannot find load more button..')
-
-
 
     #리뷰 컨테이너 가져오기
     reviews = driver.find_elements(By.XPATH, '//*[@jsname="fk8dgd"]//div[@class="d15Mdf bAhLNe"]')
@@ -76,7 +71,6 @@ def playstore_crawler(app_id, purpose, app_name_for_db):
         DATE = soup.find(class_='p2TkOb').text
         DATE = datetime.strptime(DATE, '%Y년 %m월 %d일')
         DATE = DATE.strftime('%Y-%m-%d')
-
 
         #STAR
         STAR = int(soup.find("div", role="img").get('aria-label').replace('별표 5개 만점에',  '').replace('개를 받았습니다.', '').strip())
